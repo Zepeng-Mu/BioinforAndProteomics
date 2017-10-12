@@ -1,0 +1,236 @@
+---
+title: "HW3MuZepeng"
+author: "Zepeng Mu"
+date: "10/11/2017"
+output: html_document
+---
+
+##Lab 3 Homework
+<span style="color:red"> The homework is due by 11:59 PM on the Sunday following your lab. Provide your answers in an Rmd file with the contents of this homework. Call the Rmd file "HW3LastnameFirstname.Rmd" and submit it on Canvas for your T.A. to grade. \span
+
+```{r}
+#Some of the functions to be called later
+
+library(seqinr)
+
+compStrand = function(inSeq) {
+  
+  inLen = length(inSeq)
+  out = vector(length = inLen)
+  compList = list(a = c("t"), t = c("a"), g = c("c"), c = c("g"))
+  
+  out = compList[inSeq] # equivalent to a for() loop
+  out = out[inLen:1]
+  return(out)
+}
+
+windowStartPositions = function(len, winSize, stepSize) {
+  
+  i = 1
+  out = vector(mode = "integer")
+  while(i + winSize - 1 <= len) {
+    out = append(out, i)
+    i = i + stepSize
+  }
+  return(out)
+}
+
+slidingGC = function(inSeq, winSize, stepSize) {
+  
+  start = windowStartPositions(len = length(inSeq), winSize = winSize, stepSize = stepSize)
+  out = vector(mode = "numeric")
+  
+  for(value in start) {
+    out = append(out, GC(inSeq[value:(value + winSize - 1)]))
+  }
+  return(out)
+}
+
+plotSlidingGC = function(inSeq, winSize, stepSize) {
+  x = windowStartPositions(len = length(inSeq), winSize = winSize, stepSize = stepSize)
+  y = slidingGC(inSeq = inSeq, winSize = winSize, stepSize = stepSize)
+  
+  plot(x, y, type = "l", xlab = "Genome Position", ylab = "Window GC Content", main = "GC Content")
+}
+
+isStartCodon <- function(codon) {
+  if(c2s(codon) == "atg") {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+isStopCodon <- function(codon) {
+  if(c2s(codon) == "taa" || c2s(codon) == "tag" || c2s(codon) == "tga") {
+    return(TRUE) 
+  } else {
+    return(FALSE)
+  }
+}
+```
+
+In this week’s lab, we searched the NCBI database on the NCBI website but we can also carry out searches directly from R using the SeqinR package. The SeqinR package was written by the same group that crated the ACNUC database in Lyon, France. The ACNUC database brings together data from various sources from NCBI, UniProt, and Ensembl, and makes them all very easy to search. For a complete list of all the databases included in the SeqinR package, we can use the `choosebank()` command:
+
+```{r}
+library(seqinr) #load SeqinR library
+choosebank()
+```
+
+We just saw all of the databases that we can search with SeqinR. Here are three of the most important ones:  
+
+- "genebank" contains DNA and RNA sequences from the NCBI Sequence Database, except for certain classes of sequences such as draft genome sequence data from genome sequencing projects.  
+- "refseq" contains DNA and RNA sequences from the curated part of the NCBI Sequence Database.  
+- "refseqViruses" contains DNA, RNA, and protein sequences from viruses from RefSeq.  
+
+If there is a particular database we want to search, we simply name that database in the `choosebank()` function. For example, if we wanted to query the Genbank database, we would say:  	
+```{r}
+#choosebank("genbank")
+```
+
+After we are finished with all of the analysis for a sequence, if we want to switch to another database to search, first we need to close our current database:	
+```{r}
+#closebank()
+```
+
+Once we specify which database to search through, we have to tell R what to look for. Luckily, the query() function is flexible, and we can specify a variety of different parameters in our search. For example, if we don’t know the accession number, we can provide the name of the organism we’re interested in instead. Here is a list of some of the arguments we can supply query():
+
+| Argument | Example | Restricts your search to sequences: |
+|----------|---------|-------------------------------------|
+|"AC="|"AC=NC_001477"|To the given accession number|
+|"SP="|"SP=Chlamydia"|To the specified organism|
+|"M="|"M=mRNA"|To a specific type (eg mRNA)|
+|"J="|"J=Nature"|Described in a specific journal|
+|"R="|"R=Nature/460/352"|Described in a paper in a particular journal, volume, and start page|
+|"AU="|"AU=Smith"|Described in a paper or submitted to NCBI by a specified author|
+
+We can combine these arguments with logical operators. Say we wanted to find sequences published in the Nature journal by the author Smith. We would combine the arguments like: "J=Nature AND AU=Smith". Other important operators include OR and NOT. For more information, consult the documentation page for the `query()` function. Say we wanted to find the rabies virus genome sequence like we did in the lab but we didn’t know the accession number. Since it’s a virus, we would want to search "refseqViruses" database, so we would type the commands:  
+
+```{r}
+choosebank("refseqViruses")
+rabies <- query("SP=Rabies virus")
+```
+
+The results of our search are stored under the list variable rabies. The query function gives us a list with six elements. To see what these objects are named, type:
+
+```{r}
+attributes(rabies)
+```
+
+The content of each of these names is explained in the documentation page of the `query()` function. For example, "nelem" contains the number of sequences that match the query and "req" contains their accession numbers.   
+```{r}
+rabies$nelem[[1]]
+```
+
+```{r}
+rabies$req[[1]]
+```
+
+The final step to retrieve a genomic sequence is to use the `getSequence()` function to tell R to retrieve the sequence data. Unlike the `query()` command, we need to know the accession number. To get the sequence of the rabies virus:
+
+```{r}
+rabies_seq <- getSequence(rabies$req[[1]])
+closebank() #closes session
+```
+
+<span style="color:green"> 1.1 (a) Search the Genbank database for all human (*Homo sapiens*) tRNA gene sequences. How many sequences match this query? \span
+
+```{r}
+#Your code here
+choosebank("genbank")
+tRNA = query("M=tRNA AND SP=Homo sapiens")
+tRNA$nelem
+```
+
+<span style="color:blue"> Your answer here. \span
+From `tRNA$nelem` we see that there are sequences match the query.
+<span style="color:green"> (b) Pick any of these matches and save the gene sequence as the variable tRNA_seq. Find the length and GC content of the sequence. \span
+
+```{r}
+#Your code here
+tRNA_seq = getSequence(tRNA$req[[14]])
+length(tRNA_seq)
+GC(tRNA_seq)
+```
+
+<span style="color:green"> (c) Using the `slidingWindowPlot()` function you wrote in lab, make a sliding window plot for the GC content of the sequence from part (b). Choose a window size that makes sense for your particular sequence. \span
+
+```{r}
+#Your code here
+plotSlidingGC(inSeq = tRNA_seq, winSize = 5, stepSize = 1)
+```
+
+<span style="color:blue"> Your answer here.  
+Since the length of tRNA sequences are really short, the window size should be short as well, so I set it to 5. More importantly, step size should also be short, so I could have sufficient number of points, so I set it to 1. \span  
+
+<span style="color:green"> 1.2 It is important that you know how to find biological data, such as sequences. Doing that, as you saw in lab, involves accessing a database. But there are many databases with different information, and different databases might handle their entries differently, or be more specialized. What is the difference between NCBI's RefSeq, UniProt, Swiss-Prot and TrEMBL?  \span  
+
+<span style="color:blue"> Your answer here. 
+RefSeq is a database for curated reference sequences, including genes, transcripts and proteins. Since different labs may have deposited the same sequence under different names and accession numbers, it is important to generate a non-redundant set of genes, and this is what RefSeq does.  
+UniProt is a database for protein sequence, as well as functional information, so it is not only about sequences, but a knowledge base for protein as well.  
+Swiss-Prot is one of the first protein databases in the world, and is now part of UniProtKB, the information in Swiss-Prot is manually annotated and reveiwed.  
+TrEMBL contains those proteins translated from sequences in EMBL but are not in Swiss-Prot. So TrEMBL is also part of UnitProtKB, but contains automatically annotated but not reviewed data.  
+source: https://www.ebi.ac.uk/uniprot, http://www.mrc-lmb.cam.ac.uk/genomes/madanm/pres/swiss2.htm.  \span  
+
+#### Open Reading Frames
+
+The structure of an open reading frame is as follows: a start codon, some number of intervening codons that code for the amino acids of the protein, and a stop codon to terminate the sequence. But there is a problem. There are three different "frames" possible for a given direction. To explain:
+
+Consider the sequence "GTCATGAT". If we start from the first nucleotide "G" and start assigning codons, then we get the following: **(frame 1) GTC ATG, or Valine Methionine**. Let's start at the second nucleotide: **(frame 2) TCA TGA, or Serine STOP**. And if we start at nucleotide 3: **(frame 3) CAT GAT, or Histidine Aspartate**. Note that if we start at the fourth nucleotide, we are ***in reading frame 1 once again***: ATG. All of this also applies to the complementary strand, so for a double-stranded genome, there are six possible reading frames.
+
+From this, we can see that if we want our open readng frames to begin with our start codon (ATG) and end with one of our stop codons (TAA, TAG, or TGA), then we will need our start and stop codons to be **in the same reading frame**. Put simply, this means that the length spanned by our open reading frame (first nucleotide of start codon to final nucleotide of our stop codon) must be evenly divisible by 3.
+
+Now we're getting somewhere. A final condition is that our ORFs **must be of some minimum length with no intervening in-frame stop codons.** This means that our ORFs must code for a certain number of amino acids so that the product will be a polypeptide of significant length. If there is a stop codon in-frame between our chosen start and stop codons, then that ORF would terminate by definition at that intervening stop codon, so our putative ORF is not valid.
+
+So the general strategy is as follows:
+
+1) Beginning at the first nucleotide in the sequence (i.e. in reading frame 1), move along one codon (3 nucleotides) at a time until you encounter a start codon.
+    a) Once you have found a start codon, begin building your potential ORF by checking subsequent codons to see whether a stop codon follows. Make sure to keep track of how many codons are in this potential ORF.
+        i) If you find a stop codon, then check to see if your potential ORF meets the minimum length requirement. If it does, then store the nucleotide range from the first nucleotide of the start codon to the final nucleotide of the stop codon.
+        ii) Resume your search for start codons at the codon after this stop codon.
+2) Repeat this search for reading frames 2 and 3 (i.e. beginning at nucleotides 2 and 3).
+
+<span style="color:green"> 1.4 Write a function to find possible open reading frames (ORFs) in a given sequence. Let us define those to be a substring starting with the start codon "AUG" and ending with one of the stop codons and whose length is divisible by 3 so it can be a coding sequence and without any intervening in-frame stop codons. The inputs should be a nucleotide sequence and a minimum length in codons, and the output should be a character vector containing strings of the following format (see `?paste`): `"<first base of start> to <last base of stop>"` (i.e. `"409 to 1273"`). A pseudocode sketch of a possible code implementation follows (yes there are seven indent levels; I am sorry). \span
+
+```{r}
+### REMEMBER to remove eval = FALSE from the code chunk header when you write your own function
+findORF <- function(sequence, minLength) {
+  ORFs <- character()
+  seqLen = length(sequence)
+  
+  for (indexStart in c(1, 2, 3)) {
+    while (indexStart + minLength * 3 <= seqLen) {
+      if(isStartCodon(sequence[indexStart : (indexStart + 2)])) {
+        numCodons = 2
+        for(indexStop in seq(indexStart + 3, seqLen, 3)) {
+          if(isStopCodon(sequence[indexStop : (indexStop + 2)])) {
+            if(numCodons >= minLength) {
+              ORFs = append(ORFs, paste(indexStart, "to", (indexStop + 2)))
+            }
+            indexStart = indexStop
+            break
+          }
+          numCodons = numCodons + 1
+        }
+      }
+      indexStart = indexStart + 3
+    }
+  }
+  return(ORFs)
+}
+```
+
+<span style="color:green"> Use `findORF()` from above to find the ORFS in the forward and reverse strands of the HIV-1 genome given in 'HIV.fasta'. Compare the number of ORFs you find to the number of genes known to be encoded by the HIV genome. Propose a reason for this discrepency. \span
+
+```{r}
+#Your code here
+hiv = read.fasta(file = "HIV.fasta")
+hiv_seq = hiv[[1]]
+findORF(hiv_seq, 100)
+findORF(compStrand(hiv_seq), 100)
+```
+
+<span style="color:blue"> Your answer here  
+According to Wikipedia (https://en.wikipedia.org/wiki/HIV), the RNA genome of HIV encodes for 9 genes. However, I only found 6 in all the reading frames. My findings are the same with one of the web-based tools (http://www.bioinformatics.org/sms2/orf_find.html). There are several possible reasons I can think of:  
+(1) The genome sequence used in homework is different from that used in other research, so the number of proteins coded might be different. But this explaination is not that possible because there are only 9 proteins coded, if we only have 6 then we lost 30%, which can substantially influence the normal function of HIV.  
+(2) The algorithm may be the reason. There might be some proteins smaller than 100 aa. Ubiquitin is only 76 amino acids long and plays a crucial function in our cells. Also, it is not impossible that some ORFs may lay in another ORF in the same frame, which is also excluded in the algorithm. \span
