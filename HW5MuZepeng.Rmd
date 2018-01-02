@@ -1,0 +1,84 @@
+---
+title: "HW5MuZepeng"
+author: "Zepeng Mu"
+date: "10/28/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Homework 5
+<span style="color:red"> The homework is due by 11:59 PM on the Sunday following your lab. Provide your answers in an Rmd file with the contents of this homework. Call the Rmd file “HW5LastnameFirstname.Rmd” and submit it on Canvas for your T.A. to grade. \span
+
+##Multiple sequence alignment
+
+While pairwise alignment has its uses in database searching and gene functional annotation, there are many other uses for sequence alignment that require the optimal arrangement of many genes into one alignment scaffold, including phylogenetic analysis, distant homolog detection, and gene family analysis. The alignment of three or more genes or proteins is referred to as **multiple sequence alignment**.
+
+The dynamic programming algorithms introduced above could theoretically be applied to multiple sequence alignment. Instead of recursively filling in a 2-dimensional F matrix, we would instead fill in a n-dimensional matrix to align n sequences. Similar to above, this approach would be guaranteed to determine the optimal alignment between sequences. However, as we saw at the end of the last section, these algorithms are already stretched to the limits of computational efficiency with pairwise alignment. <span style="color:purple"> This computational limit thus makes dynamic programming approaches to multiple sequence alignment all but impossible. <span style="color:black"> Therefore, there are various heuristic approaches to multiple sequence alignment, packaged in many different alignment programs \span.  
+
+**Progressive algorithms** for sequence alignment are the most straightforward and historically the most widely used. First, a progressive alignment algorithm coarsely calculates phylogenetic distance measurements between the sequences to be aligned. It then finds the most similar sequences and constructs global pairwise sequence alignments between pairs. The multiple sequence alignment is then built progressively by incorporating increasingly more distant pairs into the growing alignment until all sequences are included. <span style="color:purple"> While efficient and widely used, these algorithms have several shortcomings. First, if an alignment error is made at any stage during the progressive growth of the alignment, it will be propagated without correction when more sequences are added. In addition, these algorithms do not perform well when attempting to align distantly related sequences. \span  
+
+**Iterative algorithms** for sequence alignment are similar to progressive algorithms, except they include an additional step of iteratively re-aligning the starting seed sequences as more and more sequences are added to the alignment. <span style="color:purple"> This serves to fix the error propagation issues of progressive alignment, but at the expense of computational efficiency. These algorithms have the same difficulties as progressive alignments in aligning highly diverged sequences. \span  
+
+Finally, various algorithms employ the probabilistic framework of **Hidden Markov models (HMM)**. These approaches build off of the idea that evolution can be modeled as a Markov process, but with a much more elaborate HMM implementation that we will not get into. <span style="color:purple"> One area in which HMM algorithms have achieved particular success is in the detection and alignment of very distantly related gene sequences.\span  
+
+The EMBL-European Bioinformatics Institute provides online servers and links to descriptions for several common multiple sequence alignment programs: http://www.ebi.ac.uk/Tools/msa/ 
+
+Let's construct a multiple sequence alignment for a selection of proteins from the globin family of proteins, a widely distributed family of proteins that bind and transport oxygen. Copy the file globins.fasta from the Chalk site, which contains sequences of six globin proteins from diverse eukaryotic organisms. These include the human hemoglobin subunits alpha and beta; sperm whale myoglobin; globin proteins from a lamprey (Chordate) and insect (Arthropod) species; and a plant leghemoglobin. These sequences are stored in the **FASTA file format** discussed in class. Each sequence contains a header line by which the gene is identified, marked with the ">" character. The sequence begins after the header line, and includes all characters up until the subsequent ">" character.
+
+***DO NOT USE CHROME FOR THE FOLLOWING EXERCISE***
+
+From the EMBL-EBI Multiple Sequence Alignment page linked above, Click "Launch Clustal Omega," which opens a form for web-based submission of a set of sequences to be aligned. All of these programs also contain original source code, which can be downloaded to one's own computer to compute multiple alignments locally.
+
+Copy the contents of globin.fasta to the Input window. Click "Submit" with the default options. The calculation should run relatively quickly given the small number of sequences we are aligning. The results of the alignment will appear in the window after several seconds.
+
+<span style="color:green"> 1.1 There are three symbols that appear below alignment columns, which represent three different qualities of the column: sites that are entirely conserved as a single amino acid, sites in which all sequences have amino acids with strongly similar biochemical properties, and sites in which all sequences have amino acids with weakly similar biochemical properties. Which symbol corresponds to which class? How many sites are completely conserved across the alignment? What does this imply about the functional importance of these sites? \span
+
+<span style="color:blue"> Your answer here  
+"*" represents sites that are entirely conserved as a single amino acid.  
+":" means sites in which all sequences have amino acids with strongly similar biochemical properties.  
+"." indicates sites in which all sequences have amino acids with weakly similar biochemical properties.  
+There are five sites that are concerved across the taxa in the alignment, this means that these sites play a crucial role in the function of protein, even a slight mutation would cause a loss-of-function to the protein, so they remained unchanged for a long evolutionary time. \span
+
+Navigate to the "Result Summary" tab. Approve any browser warnings about a Java script that attempts to load. Click on the "Start Jalview" button and follow any instructions to allow Java to open the program. **Jalview** is a very common alignment viewer with many useful features. It can also be downloaded as a local program from the Jalview homepage. Once the Jalview applet opens, you will see a window like this: 
+
+![](./Images/img2.png)
+
+The alignment we saw before is now layered with additional information. The default coloring scheme colors amino acids by conservation of biochemical properties. This allows us to visualize broader patterns that pertain to protein sequences beyond conservation of amino acid identities. Strict conservation at the level of amino acid identities is reflected in the "Conservation" bar chart below. The Quality score reflects the local Blosum62 alignment score contributed by a given column. Finally, Jalview has a couple of convenient features for indexing. <span style="color:purple"> Along the top of the alignment, the multiple sequence alignment is numbered by column. Within each sequence, if you move your pointer over an amino acid, at the bottom of the window you can see the index number that amino acid holds in that particular protein. \span
+
+<span style="color:green"> 1.2 Consult the UniProt page for human hemoglobin subunit beta (the UniProt accession number is P68871). Under the "Sites" annotation, this page lists two amino acids that participate in the coordination of an iron ion and binding oxygen (designated "Metal binding"). Determine the residue numbers of these amino acids and find their corresponding columns in the alignment. What are the identities of these amino acids in hemoglobin beta and the other globins in this alignment? What might this imply about functional conservation in this family? \span
+
+<span style="color:blue"> Your answer here  
+The two metal binding residuals in human beta hemoglobin are at position 64 and 93.  
+In our alignment, amino acids at both of the positions are H, and the residues are conserved in every sequence we have in the alignment. This indicates that histidine is importmant for the binding of ion irons, and this function is also importmant and conserved for the protein family. \span
+
+Navigate in the Menu toolbar to Colour > Hydrophobicity. In this view, the most hydrophobic residues are colored red while hydrophilic residues are blue.
+
+<span style="color:green"> 1.3 Scroll along the entire alignment and look at how well the hydrophobic/hydrophilic character of an amino acid position is maintained within an alignment column. What might this imply about the 3-dimensional structures of these six proteins? (Remember that generally speaking, hydrophobic amino acids are buried in the interior of a protein structure while hydrophilic residues are found on the surface.) \span
+
+<span style="color:blue"> Your answer here  
+We could see that in the alignment, while is there is some extent of mutations in the sequence, the hydrophobicity of many mutants are similar.  
+For instance, position 71 of the alignment has 3 residues, L, F and V, but their hydrophobicity are really similar, indicated by the similar red color of the boxes.  
+This might suggest that the 3-dimensional structures are really similar, because the tertiary structure of proteins are totally decided by the primary structure, and this information lies in the physical-chemical properties of amino acid residues. If several proteins have residues with similar properties, then it suggests that these proteins might overall form similar structures. \span
+
+<span style="color:green"> 1.4 Do you see any qualitative correlation between hydrophobicity and conservation? What does this say about where amino acid substitutions are best tolerated in a protein? \span
+
+<span style="color:blue"> Your answer here  
+Yes. There is a correlation between hydrophobicity and conservation.  
+It seems that less conserved residues in the alignment (those in blue boxes) tend to be hydrophilic, while more conserved ones tend to be hydrophobic.  
+This is in part becasue hydrophilic residues are usually at the surface the protein, so the mutations are more tolerated, as long as they change to other hydrophilic residues.  
+However, those residues in the core of the protein, which are usually hydrophobic, might play an important role in protein function or maintaining the 3D structure of protein, and their conformation is also restricted by the narrow space and inter-molecular interactions, so they are less likely to mutate. \span
+
+Return to Colour > Clustalx. Now let's annotate the alignment with the known secondary structure elements of human hemoglobin beta. Right click on the lower half of the Jalview window just above the "Conservation" label and select "Add New Row." Give this new row the Annotation Label "Secondary Structure." Return to the hemoglobin beta UniProt page and scroll down to "Structure." At the beginning of this section, click the "Show more details" link below the Secondary Structure cartoon. This lists the different secondary structural elements of this protein. The first helix corresponds to residues 6-17. Determine which columns of the alignment these residues correspond to by moving your cursor over the hemoglobin beta amino acids (remember, the hemoglobin beta numbering will be different than the multiple sequence alignment numbering). In the newly made "Secondary Structure" row of the annotations window, just above the horizontal gray line, drag the red highlighter to span these residues. Right click and label as "Helix," with the sub-designation "a" to mark the first helix of the protein. Be careful. Navigating away from the "Result Summary" tab in your web browser will close the Jalview applet and lose any annotations.
+
+<span style="color:green"> 1.5 Repeat this process for the other helices noted on the UniProt page. Paste a screen shot of the Jalview window spanning as much of the alignment as you can. Broadly speaking, do you see any overlap between secondary structural elements and alignment quality, conservation, and the presence of alignment gaps? What does this imply about where sequence mutations and insertion-deletion events are likely to occur in a protein structure? Why might this be the case? \span
+
+<span style="color:blue"> Your answer here  
+The regions spanning helices generally have a higher quality score and conservation, whereas gaps usually occurs in sequences between helices.  
+This is because mutations can influence the secondary structure of proteins, so less mutations would happen in regions that form helices, resulting a higher alignment score and conservation level.  
+Similarly, gaps are more likely to be observed out side helices, which means that indel evetns are more tolerated in the more flexible parts of protein. \span
+![](./Screen Shot 2017-10-28 at 16.45.04.png)
+
+<span style="color:purple"> While sequence alignment developed historically in the context of evolutionary analysis (and was introduced that way in these exercises), many of these algorithms are finding additional uses with modern sequencing technologies. For example, if we sequence an individual's genome and want to see where his or her genome differs from a reference genome, we would conduct pairwise alignments between genomic regions. Similarly, pairwise alignment to a reference genome is used to infer from where reads from assays such as ChIP-Seq or RNA-Seq derived. Furthermore, sequence alignment is used in the initial assembly of genomes from millions of short, overlapping reads. Thus, the algorithms and difficulties in sequence alignment relevant for evolutionary analysis have deep implications for many different fields of biology. \span 

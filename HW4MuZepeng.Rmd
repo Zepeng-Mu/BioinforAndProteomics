@@ -1,0 +1,103 @@
+---
+title: "HW4MuZepeng"
+author: "Zepeng Mu"
+date: "10/18/2017"
+output: html_document
+---
+
+##Homework
+
+<span style="color:red"> The homework is due by 11:59 PM on the Sunday following lab. For this assignment, write all answers in a word processor such as Microsoft Word. For Problem 1, paste only the figures that you generate in R in the Word document, along with the written interpretation. All other questions require written responses. Call your document "HW4LastnameFirstname.docx" and submit it on Canvas by 11:59 p.m. on Sunday after lab for your TA to grade. \span
+
+<span style="color:blue"> My answer here: \span
+
+```{r}
+N = 1000
+t = 60
+model2 = matrix(0, nrow = N, ncol = t)
+model3 = matrix(0, nrow = N, ncol = t)
+for(i in 1:N) {
+  CURstate = 1
+  for(j in 1:t) {
+    randomNum <- runif(1) 
+    if(CURstate == 1) {
+      if(randomNum < 0.01) {
+        CURstate <- 2
+      } else { 
+        CURstate <- 1
+      }
+    } else {
+      if(randomNum < 0.025) {
+        CURstate <- 1
+      } else {
+        CURstate <- 2
+      }
+    }
+    model2[i, j] <- CURstate
+  }
+}
+
+for(i in 1:N) {
+  CURstate = 1
+  for(j in 1:t) {
+    randomNum <- runif(1) 
+    if(CURstate == 1) {
+      if(randomNum < 0.25) {
+        CURstate <- 2
+      } else { 
+        CURstate <- 1
+      }
+    } else {
+      if(randomNum < 0.1) {
+        CURstate <- 1
+      } else {
+        CURstate <- 2
+      }
+    }
+    model3[i, j] <- CURstate
+  }
+}
+
+proportion2 = numeric(60)
+proportion3 = numeric(60)
+for(i in 1:60) {
+  on2 = length(which(model2[, i] == 2))
+  on3 = length(which(model3[, i] == 2))
+  proportion2[i] = on2 / 1000
+  proportion3[i] = on3 / 1000
+  on
+}
+
+plot(c(1:t), proportion2, xlim = c(1, 60), ylim = c(min(proportion2, proportion3), max(proportion2, proportion3)), xlab = "Time(s)", ylab = "Proportion ON", type = "o", pch = 19, cex = 0.5, col = "orange")
+lines(c(1:t), proportion3, xlab = "Time(s)", ylab = "Proportion ON", type = "o", pch = 19, cex = 0.5, col = "blue")
+
+plot(c(1:t), proportion2, xlim = c(1, 60), ylim = c(0, 1), xlab = "Time(s)", ylab = "Proportion ON", type = "o", pch = 19, cex = 0.7, col = "red", main = "Comparisons of state transitions of two Markov Chains")
+lines(c(1:t), proportion3, xlab = "Time(s)", ylab = "Proportion ON", type = "o", pch = 19, cex = 0.7, col = "blue")
+legend(2, 1, legend = c("model2", "model3"), col = c("red", "blue"), lty = 1, border = "grey", pch = 19, cex = 0.7)
+```
+
+<span style="color:green"> 1. Return to the two state Markov model of gene transcription from part 2 of the lab. Modify the model to describe the two systems illustrated below. Analyze the behavior of these systems by simulating 1000 trajectories and making figures of "Proportion ON" versus t as in question 2.5 from lab. Comment on any differences in time to equilibrium and the equilibrium proportion ON that are observed in these two models compared to the original model from lab, and explain why this behavior arises. \span
+
+![](./Images/img4.png)
+![](./Images/img5.png)
+
+
+<span style="color:green"> 2. Despite the definition of bLength=100, if you evolve a 100-amino acid protein for 100 PAM units, not every single amino acid will change. This behavior is reflected in Table 23 of Dayhoff et al. Why might a simple observation of the number of differences between an ancestral and evolved protein sequence underestimate the number of amino acid replacements that occurred in that trajectory? \span
+
+I have provided the results of a protein sequence evolutionary simulation as primate-treeNamAlbert.pptx. We will use the results of this simulation to illustrate several patterns of interest in the data to aid in interpretation of the results of your simulation. We will cover phylogeny with more detail later in the quarter.  
+
+There are two patterns in the distribution of sequence states on a phylogenetic tree that are particularly important for phylogenetic reconstruction methods. The first is called a **synapomorphy**. A synapomorphy is a shared, derived characteristic that is used to define the common ancestry of a subset of sequences to the exclusion of others. It is these synapomorphies that are leveraged to confidently infer evolutionary relationships during phylogenetic inference. For an example of a synapomorphy, consider the evolution of position 9 in the simulation.  This position is a serine ("S" at position 9 = S9) in gorilla, human, and chimpanzee due to its transition from D to S in the most recent common ancestor (node 6) of these taxa. The shared presence of S9 unites these three primates to the exclusion of the others due to the shared maintenance of this ancestral substitution. If we were attempting to back-infer the evolutionary tree of primates with only the knowledge of the modern-day sequences, this L1 would provide support for the close clustering of these five sequences to the exclusion of others. Phylogenetic inference thus depends on the presence of many synapomorphies for each hierarchical cluster of evolutionary relationships in order to drown out evolutionary noise due to homoplasies, discussed below.  
+
+<span style="color:green"> 3. Consult the tree from your simulation of the 10-amino acid protein sequence from lab. Identify 2 synapomorphic characters in the results from your simulation (if there are none, state that there are none). \span  
+
+Whereas synapomorphies represent the "signal" for phylogenetic inference, patterns called **homoplasies** represent the "noise." A homoplasy can be thought of as a convergent evolutionary event. It refers to situations where modern sequences have identical amino acid states that are not shared as a result of a common ancestor. An example of this phenomenon in the simulation is position 5, which is an alanine (A at position 5 = A5) in chimpanzee, human, gorilla, and smonkey. In contrast to the synapomorphy at position 9, the A5 of these organisms is not shared due to common ancestry. The common ancestor of these five primates (node 2) had an asparagine ("N") at this position. Instead, substitutions from N5 to A5 occurred two independent times on the tree: between node 2 and smonkey, and between nodes 2 and 6 (via S and V). If we were to attempting to back-infer the true evolutionary relationships between these primates with only the knowledge of the modern-day sequences, this Y10 would provide inaccurate support for the clustering of smonkey with the chimpanzee, human, and gorilla.
+
+<span style="color:green"> 4. Consult the tree from your simulation. Identify 2 homoplasious characters in the results of your simulation (if there are none, state that there are none). \span
+
+Fortunately for the process of phylogenetic inference, synapomorphies are "structured" on an evolutionary tree, whereas homoplasies are expected to be "unstructured." That is, every synapomorphy, per its definition, gives support for one coherent phylogenetic tree: that which reflects the true evolutionary history. Homoplasies, on the other hand, occur randomly. This means that each homoplasy is likely to render support to a different evolutionary history.
+
+<span style="color:green"> 5. Phylogenetic inference becomes more accurate as more sequence characters are used. For example, an alignment of 100 amino acids will result in a more accurate phylogeny than an alignment of 10 amino acids; phylogenetic inference from an alignment of 1000 amino acids would be even more accurate. Explain why this is the case, in light of the distinction between synapomorphies and homoplasies discussed above. \span
+
+The PAM1 matrix represents one of the first Markov models of evolution that was employed in the phylogenetic inference of protein evolutionary histories. However, this model ignores many details of protein structure and function, instead suggesting that every single position of a protein evolves according to the same conditional probability distributions. That is, if an alanine at position x of a protein is evolving, statistically it is just as likely to substitute to a proline as an alanine at position y in the same protein.
+
+<span style="color:green"> 6. Many modern, more complex evolutionary models attempt to account for realistic behaviors of proteins that the PAM1 matrix ignores. Explain two aspects or examples of protein behavior that are ignored by the PAM1 matrix that might influence the way in which its sequence evolves. \span
